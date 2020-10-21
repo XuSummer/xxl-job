@@ -3,6 +3,7 @@ package com.xuxueli.executor.sample.jfinal.config;
 import com.jfinal.config.*;
 import com.jfinal.kit.Prop;
 import com.jfinal.kit.PropKit;
+import com.jfinal.template.Engine;
 import com.xuxueli.executor.sample.jfinal.controller.IndexController;
 import com.xuxueli.executor.sample.jfinal.jobhandler.CommandJobHandler;
 import com.xuxueli.executor.sample.jfinal.jobhandler.DemoJobHandler;
@@ -34,10 +35,12 @@ public class JFinalCoreConfig extends JFinalConfig {
 		// init executor
 		xxlJobExecutor = new XxlJobExecutor();
 		xxlJobExecutor.setAdminAddresses(xxlJobProp.get("xxl.job.admin.addresses"));
-		xxlJobExecutor.setAppName(xxlJobProp.get("xxl.job.executor.appname"));
+		xxlJobExecutor.setAccessToken(xxlJobProp.get("xxl.job.accessToken"));
+		xxlJobExecutor.setAddress(xxlJobProp.get("xxl.job.executor.address"));
+		xxlJobExecutor.setAppname(xxlJobProp.get("xxl.job.executor.appname"));
 		xxlJobExecutor.setIp(xxlJobProp.get("xxl.job.executor.ip"));
 		xxlJobExecutor.setPort(xxlJobProp.getInt("xxl.job.executor.port"));
-		xxlJobExecutor.setAccessToken(xxlJobProp.get("xxl.job.accessToken"));
+
 		xxlJobExecutor.setLogPath(xxlJobProp.get("xxl.job.executor.logpath"));
 		xxlJobExecutor.setLogRetentionDays(xxlJobProp.getInt("xxl.job.executor.logretentiondays"));
 
@@ -56,35 +59,27 @@ public class JFinalCoreConfig extends JFinalConfig {
 
 	// ---------------------- jfinal ----------------------
 
-	public void configRoute(Routes route) {
-		route.add("/", IndexController.class);
-	}
-
 	@Override
-	public void afterJFinalStart() {
+	public void onStart() {
 		initXxlJobExecutor();
 	}
 
 	@Override
-	public void beforeJFinalStop() {
+	public void onStop() {
 		destoryXxlJobExecutor();
 	}
 
-	public void configConstant(Constants constants) {
-
+	public void configConstant(Constants me) {
+		me.setDevMode(true);
 	}
 
-	public void configPlugin(Plugins plugins) {
-
+	public void configRoute(Routes routes) {
+		routes.add("/", IndexController.class);
 	}
 
-	public void configInterceptor(Interceptors interceptors) {
-
-	}
-
-	public void configHandler(Handlers handlers) {
-
-	}
-
+	public void configEngine(Engine me) {}
+	public void configPlugin(Plugins me) {}
+	public void configInterceptor(Interceptors me) {}
+	public void configHandler(Handlers me) {}
 
 }
