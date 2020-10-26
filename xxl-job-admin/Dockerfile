@@ -12,4 +12,4 @@ COPY ./target/xxl-job-admin-*.jar /opt/app.jar
 ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "/opt/app.jar"]
 #ENTRYPOINT ["sh","-c","java -Djava.security.egd=file:/dev/./urandom -jar $JAVA_OPTS /app.jar $PARAMS"]
 # 使用端口8080
-EXPOSE 8080
+EXPOSE 8090
