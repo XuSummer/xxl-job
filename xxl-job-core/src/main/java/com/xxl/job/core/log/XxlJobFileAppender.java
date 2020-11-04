@@ -151,6 +151,8 @@ public class XxlJobFileAppender {
 		StringBuffer logContentBuffer = new StringBuffer();
 		int toLineNum = 0;
 		LineNumberReader reader = null;
+		// 定义步长，防止一次传输数据过大，netty出现问题
+		int stepSize = 100;
 		try {
 			//reader = new LineNumberReader(new FileReader(logFile));
 			reader = new LineNumberReader(new InputStreamReader(new FileInputStream(logFile), "utf-8"));
@@ -160,6 +162,9 @@ public class XxlJobFileAppender {
 				toLineNum = reader.getLineNumber();		// [from, to], start as 1
 				if (toLineNum >= fromLineNum) {
 					logContentBuffer.append(line).append("\n");
+					if ((toLineNum - fromLineNum) > stepSize) {
+						break;
+					}
 				}
 			}
 		} catch (IOException e) {

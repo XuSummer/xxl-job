@@ -1,5 +1,5 @@
 #
-# XXL-JOB v2.2.1-SNAPSHOT
+# XXL-JOB v6.2.1-SNAPSHOT
 # Copyright (c) 2015-present, xuxueli.
 
 CREATE TABLE `xxl_job_info` (

@@ -3,8 +3,11 @@ package com.xxl.job.core.executor.impl;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.executor.XxlJobExecutor;
 import com.xxl.job.core.glue.GlueFactory;
+import com.xxl.job.core.handler.IJobHandler;
+import com.xxl.job.core.handler.annotation.JobHandler;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import com.xxl.job.core.handler.impl.MethodJobHandler;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -14,6 +17,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.MethodIntrospector;
 import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.util.CollectionUtils;
 
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -33,7 +37,7 @@ public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationC
     public void afterSingletonsInstantiated() {
 
         // init JobHandler Repository
-        /*initJobHandlerRepository(applicationContext);*/
+        initJobHandlerRepository(applicationContext);
 
         // init JobHandler Repository (for method)
         initJobHandlerMethodRepository(applicationContext);
@@ -56,7 +60,7 @@ public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationC
     }
 
 
-    /*private void initJobHandlerRepository(ApplicationContext applicationContext) {
+    private void initJobHandlerRepository(ApplicationContext applicationContext) {
         if (applicationContext == null) {
             return;
         }
@@ -64,19 +68,38 @@ public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationC
         // init job handler action
         Map<String, Object> serviceBeanMap = applicationContext.getBeansWithAnnotation(JobHandler.class);
 
-        if (serviceBeanMap != null && serviceBeanMap.size() > 0) {
-            for (Object serviceBean : serviceBeanMap.values()) {
+        if (!CollectionUtils.isEmpty(serviceBeanMap)) {
+            Object serviceBean;
+            String name;
+            for (Map.Entry<String, Object> entry : serviceBeanMap.entrySet()) {
+                serviceBean = entry.getValue();
+                name = entry.getKey();
                 if (serviceBean instanceof IJobHandler) {
-                    String name = serviceBean.getClass().getAnnotation(JobHandler.class).value();
                     IJobHandler handler = (IJobHandler) serviceBean;
                     if (loadJobHandler(name) != null) {
-                        throw new RuntimeException("xxl-job jobhandler[" + name + "] naming conflicts.");
+                        throw new RuntimeException("xxl-job jobhandler [" + name + "] naming conflicts.");
                     }
                     registJobHandler(name, handler);
                 }
             }
         }
-    }*/
+
+//        // init job handler action
+//        Map<String, Object> serviceBeanMap = applicationContext.getBeansWithAnnotation(JobHandler.class);
+//
+//        if (serviceBeanMap != null && serviceBeanMap.size() > 0) {
+//            for (Object serviceBean : serviceBeanMap.values()) {
+//                if (serviceBean instanceof IJobHandler) {
+//                    String name = serviceBean.getClass().getAnnotation(JobHandler.class).value();
+//                    IJobHandler handler = (IJobHandler) serviceBean;
+//                    if (loadJobHandler(name) != null) {
+//                        throw new RuntimeException("xxl-job jobhandler[" + name + "] naming conflicts.");
+//                    }
+//                    registJobHandler(name, handler);
+//                }
+//            }
+//        }
+    }
 
     private void initJobHandlerMethodRepository(ApplicationContext applicationContext) {
         if (applicationContext == null) {
@@ -99,7 +122,7 @@ public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationC
             } catch (Throwable ex) {
                 logger.error("xxl-job method-jobhandler resolve error for bean[" + beanDefinitionName + "].", ex);
             }
-            if (annotatedMethods==null || annotatedMethods.isEmpty()) {
+            if (annotatedMethods == null || annotatedMethods.isEmpty()) {
                 continue;
             }
 
