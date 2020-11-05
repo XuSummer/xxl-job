@@ -67,7 +67,7 @@
     var triggerTime = '${triggerTime?c}';
     var logId = '${logId}';
 </script>
-<script src="<#if request.contextPath != '.'>${request.contextPath}</#if>/static/js/joblog.detail.1.js"></script>
+<script src="${request.contextPath == '.' ? null : request.contextPath}/static/js/joblog.detail.1.js"></script>
 
 </body>
 </html>
