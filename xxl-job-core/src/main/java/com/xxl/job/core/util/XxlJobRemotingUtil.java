@@ -65,6 +65,9 @@ public class XxlJobRemotingUtil {
         HttpURLConnection connection = null;
         BufferedReader bufferedReader = null;
         try {
+            if (!url.startsWith("http")) {
+                url = "http://" + url;
+            }
             // connection
             URL realUrl = new URL(url);
             connection = (HttpURLConnection) realUrl.openConnection();
