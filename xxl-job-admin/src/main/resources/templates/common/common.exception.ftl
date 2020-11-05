@@ -23,7 +23,7 @@
 	<div class="dialog"> 
 	    <h1>System Error</h1>
 	    <p>${exceptionMsg}</p>
-		<a href="javascript:window.location.href='${request.contextPath == '.' ? null : request.contextPath}/'">Back</a>
+		<a href="javascript:window.location.href='<#if request.contextPath != '.'>${request.contextPath}</#if>/'">Back</a>
 	    </p> 
 	</div>
 
