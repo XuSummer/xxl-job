@@ -2,6 +2,7 @@ package com.summer.job;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.summer.job.exceptions.RetryException;
+import com.summer.job.exceptions.SkipCurrentDateException;
 import com.summer.job.param.JobParams;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.log.XxlJobLogger;
@@ -27,6 +28,8 @@ public abstract class AbstractSimpleJobHandler extends AbstractParamSplitJobHand
     private ReturnT<String> runWrap() throws Exception {
         try {
             return this.run();
+        } catch (SkipCurrentDateException e) {
+            return ReturnT.FAIL;
         } catch (RetryException e) {
             XxlJobLogger.log(e);
             return e.retryWithResult(this::runWrap);
