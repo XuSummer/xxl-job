@@ -29,6 +29,7 @@ public abstract class AbstractSimpleJobHandler extends AbstractParamSplitJobHand
         try {
             return this.run();
         } catch (SkipCurrentDateException e) {
+            XxlJobLogger.log(e.getMessage());
             return ReturnT.FAIL;
         } catch (RetryException e) {
             XxlJobLogger.log(e);
