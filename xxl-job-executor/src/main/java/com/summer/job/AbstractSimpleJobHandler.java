@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.summer.job.exceptions.RetryException;
 import com.summer.job.exceptions.SkipCurrentDateException;
 import com.summer.job.param.JobParams;
-import com.xxl.job.core.biz.model.ReturnT;
-import com.xxl.job.core.log.XxlJobLogger;
+import com.xxl.job.core.context.XxlJobHelper;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpStatusCodeException;
@@ -25,26 +25,26 @@ public abstract class AbstractSimpleJobHandler extends AbstractParamSplitJobHand
 
     protected static final ThreadLocal<LocalDate> CURRENT_DATE = new ThreadLocal<>();
 
-    private ReturnT<String> runWrap() throws Exception {
+    private void runWrap() throws Exception {
         try {
-            return this.run();
+            this.run();
         } catch (SkipCurrentDateException e) {
-            XxlJobLogger.log(e.getMessage());
-            return ReturnT.FAIL;
+            XxlJobHelper.log(e.getMessage());
+            XxlJobHelper.handleFail();
         } catch (RetryException e) {
-            XxlJobLogger.log(e);
-            return e.retryWithResult(this::runWrap);
+            XxlJobHelper.log(e);
+            e.retry(this::runWrap);
         } catch (Exception e) {
             if (e instanceof HttpStatusCodeException) {
                 HttpStatusCodeException se = (HttpStatusCodeException) e;
-                XxlJobLogger.log("statusCode: {}, responseBody: {}", se.getStatusCode(), se.getResponseBodyAsString());
+                XxlJobHelper.log("statusCode: {}, responseBody: {}", se.getStatusCode(), se.getResponseBodyAsString());
                 if (se.getStatusCode().value() >= HttpStatus.INTERNAL_SERVER_ERROR.value()) {
                     // 服务商错误则需要重试
-                    return new RetryException(10).retryWithResult(this::runWrap);
+                    new RetryException(10).retry(this::runWrap);
                 }
             } else if (e instanceof ResourceAccessException) {
-                XxlJobLogger.log(e);
-                return new RetryException(10).retryWithResult(this::runWrap);
+                XxlJobHelper.log(e);
+                new RetryException(10).retry(this::runWrap);
             }
             // 未知错误直接终止任务
             throw e;
@@ -54,16 +54,16 @@ public abstract class AbstractSimpleJobHandler extends AbstractParamSplitJobHand
     /**
      * 执行核心
      */
-    protected abstract ReturnT<String> run() throws Exception;
+    protected abstract void run() throws Exception;
 
     /**
      * 根据渠道信息查询该渠道下所有关联数据
      */
     @Override
-    public ReturnT<String> runOneDay(JobParams jobParams) throws Exception {
+    public void runOneDay(JobParams jobParams) throws Exception {
         try {
             CURRENT_DATE.set(jobParams.getCurrentDate());
-            return this.runWrap();
+            this.runWrap();
         } finally {
             CURRENT_DATE.remove();
         }
